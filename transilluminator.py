@@ -8,9 +8,9 @@ class Transilluminator(Basic_Enclosure):
     def make(self):
         self.__make_filter_holder()
         super(Transilluminator,self).make()
-        self.__make_filter_holes()
+        self.__make_custom_holes()
 
-    def  __make_filter_holes(self): 
+    def  __make_custom_holes(self): 
         hole_list = []
 
         filter_location = self.params['filter_location']
@@ -30,6 +30,24 @@ class Transilluminator(Basic_Enclosure):
                 'size':  (70,70),
                 }
         hole_list.append(hole)
+
+        # Add holes for power connector 
+        hole = {
+                'panel': 'left',
+                'type':  'square',
+                'location': (0,0),
+                'size':  (26.9, 27.6)
+                }
+        hole_list.append(hole)
+        for i in (-1,1):
+            hole  = {
+                    'panel' : 'left',
+                    'type':  'round', 
+                    'location' : (i*43.8/2.0, 0),
+                    'size'  : 3.3
+                    }
+            hole_list.append(hole)
+            
         self.add_holes(hole_list, cut_depth=2*holder_thickness)
 
 
