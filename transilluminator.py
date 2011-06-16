@@ -1,3 +1,4 @@
+import scipy
 from py2scad import *
 
 class Transilluminator(Basic_Enclosure):
@@ -6,15 +7,23 @@ class Transilluminator(Basic_Enclosure):
         self.params = params
 
     def make(self):
-        self.__make_filter_holder()
+        self.__make_holder_and_cover()
         super(Transilluminator,self).make()
         self.__make_custom_holes()
+
+    def get_filter_holder_projection(self):
+        return Projection(self.filter_holder)
+
+    def get_cover_plate_projection(self):
+        return Projection(self.cover_plate)
 
     def  __make_custom_holes(self): 
         hole_list = []
 
         filter_location = self.params['filter_location']
         holder_thickness = self.params['filter_holder_thickness']
+        inner_x, inner_y, inner_z = self.params['inner_dimensions']
+
         # Add square hole to top
         hole = {
                 'panel' : 'top',
@@ -23,6 +32,8 @@ class Transilluminator(Basic_Enclosure):
                 'size': (65,65),
                 }
         hole_list.append(hole)
+
+        # Add square hole to filter holder
         hole = { 
                 'panel' : 'filter_holder',
                 'type' :  'square',
@@ -31,7 +42,7 @@ class Transilluminator(Basic_Enclosure):
                 }
         hole_list.append(hole)
 
-        # Add holes for power connector 
+        # Add hole for power connector 
         hole = {
                 'panel': 'left',
                 'type':  'square',
@@ -39,19 +50,52 @@ class Transilluminator(Basic_Enclosure):
                 'size':  (26.9, 27.6)
                 }
         hole_list.append(hole)
+
+        # Add mounting holes for power connector
+        # 5-40 threaded.
         for i in (-1,1):
             hole  = {
                     'panel' : 'left',
                     'type':  'round', 
                     'location' : (i*43.8/2.0, 0),
-                    'size'  : 3.3
+                    'size'  : 0.104*INCH2MM 
                     }
             hole_list.append(hole)
-            
+
+        # Make vent holes for bottom
+        gap = 4*0.25*INCH2MM
+        vent_hole_diam = 0.25*INCH2MM
+        N = int(inner_x/(4*vent_hole_diam))
+        x_pos = scipy.linspace(-inner_x/2+gap, inner_x/2-gap,N)
+        y_pos = [-inner_y/4.0, inner_y/4.0]
+        for x in x_pos:
+            for y in y_pos:
+                hole = {
+                        'panel'    : 'bottom', 
+                        'type'     :  'round',
+                        'location' : (x,y),
+                        'size'     : vent_hole_diam,
+                        }
+                hole_list.append(hole)
+
+        # Make mount holes for UV lamp
+        # 8-32
+        lamp_mount_spacing = 142.0
+        lamp_mount_offset = 0.5*INCH2MM
+        lamp_mount_diam =0.136*INCH2MM   
+        for x in (-0.5*lamp_mount_spacing, 0.5*lamp_mount_spacing):
+            hole = {
+                    'panel'     : 'bottom', 
+                    'type'      : 'round',
+                    'location'  : (x-lamp_mount_offset,0),
+                    'size'      : lamp_mount_diam, 
+                    }
+            hole_list.append(hole)
+
         self.add_holes(hole_list, cut_depth=2*holder_thickness)
+        
 
-
-    def __make_filter_holder(self):
+    def __make_holder_and_cover(self):
         """
         Create copy of top for filter holder
         """
@@ -74,6 +118,12 @@ class Transilluminator(Basic_Enclosure):
         holder_maker = Plate_W_Slots(holder_params)
         self.filter_holder = holder_maker.make()
 
+        # Create cover plate
+        top_size  = top_x, top_y, self.params['cover_thickness']
+        cover_params = {'size' : top_size, 'radius' : lid_radius, 'slots' : []}
+        cover_maker = Plate_W_Slots(cover_params)
+        self.cover_plate = cover_maker.make()
+
         # Add holes for standoffs
         standoff_diameter = self.params['standoff_diameter']
         standoff_offset = self.params['standoff_offset']
@@ -95,27 +145,49 @@ class Transilluminator(Basic_Enclosure):
                         'size'      : standoff_hole_diameter,
                         }
                 hole_list.append(hole)
+                hole = { 
+                        'panel'     : 'cover_plate', 
+                        'type'      : 'round',
+                        'location'  : (x,y), 
+                        'size'      : standoff_hole_diameter,
+                        }
+                hole_list.append(hole)
 
         self.add_holes(hole_list,cut_depth=2*holder_thickness)
 
+
     def get_assembly(self, **kwargs):
-        explode = kwargs['explode']
+        assembly_options = {
+                'explode'            : (0,0,0),
+                'show_filter_holder' : True,
+                'show_cover_plate'   : True,
+                }
+        assembly_options.update(kwargs)
+        explode = assembly_options['explode']
+        explode_x, explode_y, explode_z = explode
 
         parts_list = super(Transilluminator,self).get_assembly(**kwargs)
 
-        # Translate filter holder into position
         inner_x, inner_y, inner_z = self.params['inner_dimensions']
         wall_thickness = self.params['wall_thickness']
         holder_thickness = self.params['filter_holder_thickness']
+        cover_thickness = self.params['cover_thickness']
         
-        explode_x, explode_y, explode_z = explode
-
         # Translate top and bottom into assembled positions
         top_z_shift = 0.5*inner_z + 0.5*wall_thickness + explode_z
         filter_z_shift = top_z_shift + 0.5*holder_thickness + 0.5*wall_thickness + explode_z
         filter_holder = Translate(self.filter_holder, v=(0.0,0.0,filter_z_shift))
         filter_holder = Color(filter_holder,rgba=(1,0,0,1))
-        parts_list.append(filter_holder)
+
+        # Translate cover plate into  positon
+        cover_z_shift = filter_z_shift + 0.5*cover_thickness + 0.5*wall_thickness 
+        cover_plate = Translate(self.cover_plate, v=(0,0,cover_z_shift+explode_z))
+        cover_plate = Color(cover_plate,rgba=(0,0,1,0.5))
+
+        if assembly_options['show_filter_holder'] == True:
+            parts_list.append(filter_holder)
+        if assembly_options['show_cover_plate'] == True:
+            parts_list.append(cover_plate)
 
         return parts_list
 
