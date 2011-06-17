@@ -29,7 +29,7 @@ params = {
         'standoff_offset'         : 0.05*INCH2MM,
         'standoff_hole_diameter'  : 0.196*INCH2MM, 
         'filter_holder_thickness' : 6.0,
-        'filter_location'         : (1.25*INCH2MM,0),
+        'filter_location'         : (1.25*INCH2MM - 0.325*INCH2MM,0),  # Jo added a change here
         'cover_thickness'         : 3.0,
         'hole_list'               : [],
         }
