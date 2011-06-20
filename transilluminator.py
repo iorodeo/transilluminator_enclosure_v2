@@ -57,7 +57,7 @@ class Transilluminator(Basic_Enclosure):
             hole  = {
                     'panel' : 'left',
                     'type':  'round', 
-                    'location' : (i*43.8/2.0, 0),
+                    'location' : (i*36.8/2.0, 0),
                     'size'  : 0.104*INCH2MM 
                     }
             hole_list.append(hole)
