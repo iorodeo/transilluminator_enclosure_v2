@@ -24,12 +24,19 @@ class Transilluminator(Basic_Enclosure):
         holder_thickness = self.params['filter_holder_thickness']
         inner_x, inner_y, inner_z = self.params['inner_dimensions']
 
+        if self.params['window_size'].lower() == 'small':
+            window_size = self.params['small_window_size']
+            filter_size = self.params['small_filter_size']
+        else:
+            window_size = self.params['large_window_size']
+            filter_size = self.params['large_filter_size']
+
         # Add square hole to top
         hole = {
                 'panel' : 'top',
                 'type'  : 'square',
                 'location': filter_location, 
-                'size': (65,65),
+                'size': window_size,
                 }
         hole_list.append(hole)
 
@@ -38,51 +45,55 @@ class Transilluminator(Basic_Enclosure):
                 'panel' : 'filter_holder',
                 'type' :  'square',
                 'location' : filter_location,
-                'size':  (70,70),
+                'size':  filter_size,
                 }
         hole_list.append(hole)
 
         # Add hole for power connector 
+        jack_panel = self.params['power_jack_panel']
+        x_jack, y_jack = self.params['power_jack_location']
         hole = {
-                'panel': 'left',
+                'panel' : jack_panel,
                 'type':  'square',
-                'location': (0,0),
+                'location': (x_jack,y_jack),
                 'size':  (26.9, 27.6)
                 }
+        # JLO 
         hole_list.append(hole)
 
         # Add mounting holes for power connector
         # 5-40 threaded.
         for i in (-1,1):
             hole  = {
-                    'panel' : 'left',
+                    'panel' : jack_panel,
                     'type':  'round', 
-                    'location' : (i*36.8/2.0, 0),
+                    'location' : (i*36.8/2.0 + x_jack, y_jack),
                     'size'  : 0.104*INCH2MM 
                     }
+            # JLO
             hole_list.append(hole)
 
         # Make vent holes for bottom
-        gap = 4*0.25*INCH2MM
-        vent_hole_diam = 0.25*INCH2MM
-        N = int(inner_x/(4*vent_hole_diam))
-        x_pos = scipy.linspace(-inner_x/2+gap, inner_x/2-gap,N)
-        y_pos = [-inner_y/4.0, inner_y/4.0]
-        for x in x_pos:
-            for y in y_pos:
-                hole = {
-                        'panel'    : 'bottom', 
-                        'type'     :  'round',
-                        'location' : (x,y),
-                        'size'     : vent_hole_diam,
-                        }
-                hole_list.append(hole)
+        if self.params['include_vent_holes']:
+            gap = 4*0.25*INCH2MM
+            vent_hole_diam = 0.25*INCH2MM
+            N = int(inner_x/(4*vent_hole_diam))
+            x_pos = scipy.linspace(-inner_x/2+gap, inner_x/2-gap,N)
+            y_pos = [-inner_y/4.0, inner_y/4.0]
+            for x in x_pos:
+                for y in y_pos:
+                    hole = {
+                            'panel'    : 'bottom', 
+                            'type'     :  'round',
+                            'location' : (x,y),
+                            'size'     : vent_hole_diam,
+                            }
+                    hole_list.append(hole)
 
         # Make mount holes for UV lamp
-        # 8-32
-        lamp_mount_spacing = 142.0
-        lamp_mount_offset = 0.5*INCH2MM
-        lamp_mount_diam =0.136*INCH2MM   
+        lamp_mount_spacing = self.params['lamp_mount_spacing']
+        lamp_mount_offset = self.params['lamp_mount_offset']
+        lamp_mount_diam = self.params['lamp_mount_diam']
         for x in (-0.5*lamp_mount_spacing, 0.5*lamp_mount_spacing):
             hole = {
                     'panel'     : 'bottom', 
