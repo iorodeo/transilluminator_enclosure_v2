@@ -10,6 +10,7 @@ class Transilluminator(Basic_Enclosure):
         self.__make_holder_and_cover()
         super(Transilluminator,self).make()
         self.__make_custom_holes()
+        self.__make_power_jack_extender()
 
     def get_filter_holder_projection(self):
         return Projection(self.filter_holder)
@@ -52,23 +53,27 @@ class Transilluminator(Basic_Enclosure):
         # Add hole for power connector 
         jack_panel = self.params['power_jack_panel']
         x_jack, y_jack = self.params['power_jack_location']
+        jack_hole_size = self.params['power_jack_hole_size']
+
         hole = {
                 'panel' : jack_panel,
                 'type':  'square',
                 'location': (x_jack,y_jack),
-                'size':  (26.9, 27.6)
+                'size': jack_hole_size 
                 }
         # JLO 
         hole_list.append(hole)
 
         # Add mounting holes for power connector
         # 5-40 threaded.
+        jack_mount_hole_size = self.params['power_jack_mount_hole_size']
+        jack_mount_hole_offset = self.params['power_jack_mount_hole_offset'] 
         for i in (-1,1):
             hole  = {
                     'panel' : jack_panel,
                     'type':  'round', 
                     'location' : (i*36.8/2.0 + x_jack, y_jack),
-                    'size'  : 0.104*INCH2MM 
+                    'size'  : jack_mount_hole_size 
                     }
             # JLO
             hole_list.append(hole)
@@ -167,11 +172,64 @@ class Transilluminator(Basic_Enclosure):
         self.add_holes(hole_list,cut_depth=2*holder_thickness)
 
 
+    def __make_power_jack_extender(self):
+
+        inner_x, inner_y, inner_z = self.params['inner_dimensions']
+        thickness = self.params['power_jack_extender_thickness']
+        jack_mount_hole_offset = self.params['power_jack_mount_hole_offset'] 
+
+        extender_x = 2*jack_mount_hole_offset + 2*thickness
+        extender_y = inner_z - 8.0
+        extender_z = thickness
+        radius = thickness
+
+        self.power_extender = rounded_box(
+                extender_x,
+                extender_y,
+                extender_z,
+                radius,
+                round_z=False
+                )
+
+        hole_list = []
+
+        # Add hole for power connector 
+        jack_hole_size = self.params['power_jack_hole_size']
+
+        hole = {
+                'panel' : 'power_extender',
+                'type':  'square',
+                'location': (0,0),
+                'size': jack_hole_size 
+                }
+        # JLO 
+        hole_list.append(hole)
+
+        # Add mounting holes for power connector
+        # 5-40 threaded.
+        jack_mount_hole_size = self.params['power_jack_mount_hole_size']
+        jack_mount_hole_offset = self.params['power_jack_mount_hole_offset'] 
+
+        for i in (-1,1):
+            hole  = {
+                    'panel' : 'power_extender',
+                    'type':  'round', 
+                    'location' : (i*36.8/2.0,0),
+                    'size'  : jack_mount_hole_size 
+                    }
+            # JLO
+            hole_list.append(hole)
+
+
+        self.add_holes(hole_list, cut_depth=2*thickness)
+        
+
     def get_assembly(self, **kwargs):
         assembly_options = {
                 'explode'            : (0,0,0),
                 'show_filter_holder' : True,
                 'show_cover_plate'   : True,
+                'show_power_extender': True,
                 }
         assembly_options.update(kwargs)
         explode = assembly_options['explode']
@@ -195,10 +253,24 @@ class Transilluminator(Basic_Enclosure):
         cover_plate = Translate(self.cover_plate, v=(0,0,cover_z_shift+explode_z))
         cover_plate = Color(cover_plate,rgba=(0,0,1,0.5))
 
+        # Rotate and translate power extender into position
+        power_extender = self.power_extender
+        power_extender = Rotate(power_extender,v=[1,0,0],a=90)
+        extender_thickness = self.params['power_jack_extender_thickness']
+        x_jack, y_jack = self.params['power_jack_location']
+        extender_v_shift = (
+                x_jack, 
+                -0.5*extender_thickness - 0.5*inner_y - wall_thickness,
+                0,
+                )
+        power_extender = Translate(power_extender,v=extender_v_shift)
+
         if assembly_options['show_filter_holder'] == True:
             parts_list.append(filter_holder)
         if assembly_options['show_cover_plate'] == True:
             parts_list.append(cover_plate)
+        if assembly_options['show_power_extender'] == True:
+            parts_list.append(power_extender)
 
         return parts_list
 

@@ -115,24 +115,24 @@ class SafetyLid(object):
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
     params = {
-            'x_dim'           : 7.5*INCH2MM, 
+            'x_dim'           : 4.0*INCH2MM, 
             'y_dim'           : 4.0*INCH2MM,  
-            'z_dim'           : 0.6*INCH2MM,
-            'thickness'       : 0.25*INCH2MM,
-            'hinge_hole_sep'  : 0.62875*INCH2MM,
+            'z_dim'           : 0.84*INCH2MM,
+            'thickness'       : 3,
+            'hinge_hole_sep'  : 14.8,
             'hinge_hole_diam' : 0.14*INCH2MM,
             'hinge_spacing'   : 2.0*INCH2MM,
-            'hinge_hole_z'    : 0.1655*INCH2MM,
+            'hinge_hole_z'    : 10,
             }
 
     lid = SafetyLid(params=params)
 
-    #prog_assem = SCAD_Prog()
-    #prog_assem.fn = 50
-    #prog_assem.add(lid.get_assembly())
-    #prog_assem.write('safety_lid_assembly.scad')
+    prog_assem = SCAD_Prog()
+    prog_assem.fn = 50
+    prog_assem.add(lid.get_assembly())
+    prog_assem.write('safety_lid_assembly.scad')
 
-    prog_layout = SCAD_Prog()
-    prog_layout.fn = 50
-    prog_layout.add(lid.get_layout())
-    prog_layout.write('safety_lid_layout.scad')
+    #prog_layout = SCAD_Prog()
+    #prog_layout.fn = 50
+    #prog_layout.add(lid.get_layout())
+    #prog_layout.write('safety_lid_layout.scad')
