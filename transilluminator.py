@@ -7,13 +7,16 @@ class Transilluminator(Basic_Enclosure):
         self.params = params
 
     def make(self):
-        self.__make_holder_and_cover()
+        self.__make_holder_mask_and_cover()
         super(Transilluminator,self).make()
         self.__make_custom_holes()
         self.__make_power_jack_extender()
 
     def get_filter_holder_projection(self):
         return Projection(self.filter_holder)
+
+    def get_mask_plate_projection(self):
+        return Projection(self.mask_plate)
 
     def get_cover_plate_projection(self):
         return Projection(self.cover_plate)
@@ -37,6 +40,15 @@ class Transilluminator(Basic_Enclosure):
                 'panel' : 'top',
                 'type'  : 'square',
                 'location': filter_location, 
+                'size': window_size,
+                }
+        hole_list.append(hole)
+
+        # Add square hole to mask
+        hole = {
+                'panel' : 'mask_plate',
+                'type' : 'square',
+                'location': filter_location,
                 'size': window_size,
                 }
         hole_list.append(hole)
@@ -111,7 +123,7 @@ class Transilluminator(Basic_Enclosure):
         self.add_holes(hole_list, cut_depth=2*holder_thickness)
         
 
-    def __make_holder_and_cover(self):
+    def __make_holder_mask_and_cover(self):
         """
         Create copy of top for filter holder
         """
@@ -134,6 +146,12 @@ class Transilluminator(Basic_Enclosure):
         holder_maker = Plate_W_Slots(holder_params)
         self.filter_holder = holder_maker.make()
 
+        # Create mask
+        mask_size = top_x, top_y, self.params['mask_thickness']
+        mask_params = {'size': mask_size, 'radius' : lid_radius, 'slots': []}
+        mask_maker = Plate_W_Slots(mask_params)
+        self.mask_plate = mask_maker.make()
+
         # Create cover plate
         top_size  = top_x, top_y, self.params['cover_thickness']
         cover_params = {'size' : top_size, 'radius' : lid_radius, 'slots' : []}
@@ -154,20 +172,14 @@ class Transilluminator(Basic_Enclosure):
                 x = i*(0.5*inner_x - 0.5*standoff_diameter - standoff_offset)
                 y = j*(0.5*inner_y - 0.5*standoff_diameter - standoff_offset)
                 self.standoff_xy_pos.append((x,y))
-                hole = { 
-                        'panel'     : 'filter_holder', 
-                        'type'      : 'round',
-                        'location'  : (x,y), 
-                        'size'      : standoff_hole_diameter,
-                        }
-                hole_list.append(hole)
-                hole = { 
-                        'panel'     : 'cover_plate', 
-                        'type'      : 'round',
-                        'location'  : (x,y), 
-                        'size'      : standoff_hole_diameter,
-                        }
-                hole_list.append(hole)
+                for plate_name in ('filter_holder', 'mask_plate', 'cover_plate'):
+                    hole = { 
+                            'panel'     : plate_name, 
+                            'type'      : 'round',
+                            'location'  : (x,y), 
+                            'size'      : standoff_hole_diameter,
+                            }
+                    hole_list.append(hole)
 
         self.add_holes(hole_list,cut_depth=2*holder_thickness)
 
@@ -228,6 +240,7 @@ class Transilluminator(Basic_Enclosure):
         assembly_options = {
                 'explode'            : (0,0,0),
                 'show_filter_holder' : True,
+                'show_mask_plate'    : True,
                 'show_cover_plate'   : True,
                 'show_power_extender': True,
                 }
@@ -240,18 +253,21 @@ class Transilluminator(Basic_Enclosure):
         inner_x, inner_y, inner_z = self.params['inner_dimensions']
         wall_thickness = self.params['wall_thickness']
         holder_thickness = self.params['filter_holder_thickness']
+        mask_thickness = self.params['mask_thickness']
         cover_thickness = self.params['cover_thickness']
         
         # Translate top and bottom into assembled positions
         top_z_shift = 0.5*inner_z + 0.5*wall_thickness + explode_z
         filter_z_shift = top_z_shift + 0.5*holder_thickness + 0.5*wall_thickness + explode_z
         filter_holder = Translate(self.filter_holder, v=(0.0,0.0,filter_z_shift))
-        filter_holder = Color(filter_holder,rgba=(1,0,0,1))
+
+        # Translate mask plate into position
+        mask_z_shift = filter_z_shift + 0.5*mask_thickness + 0.5*wall_thickness 
+        mask_plate = Translate(self.mask_plate, v=(0,0,mask_z_shift+explode_z))
 
         # Translate cover plate into  positon
-        cover_z_shift = filter_z_shift + 0.5*cover_thickness + 0.5*wall_thickness 
+        cover_z_shift = mask_z_shift + 0.5*cover_thickness + 0.5*wall_thickness 
         cover_plate = Translate(self.cover_plate, v=(0,0,cover_z_shift+explode_z))
-        cover_plate = Color(cover_plate,rgba=(0,0,1,0.5))
 
         # Rotate and translate power extender into position
         power_extender = self.power_extender
@@ -267,6 +283,8 @@ class Transilluminator(Basic_Enclosure):
 
         if assembly_options['show_filter_holder'] == True:
             parts_list.append(filter_holder)
+        if assembly_options['show_mask_plate'] == True:
+            parts_list.append(mask_plate)
         if assembly_options['show_cover_plate'] == True:
             parts_list.append(cover_plate)
         if assembly_options['show_power_extender'] == True:

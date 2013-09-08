@@ -26,7 +26,7 @@ else:
     raise ValueError, 'unknown style {0}'.format(style)
 
  
-fn = 50
+fn = 70
 
 params = {
         'inner_dimensions'              : (x,y,z), 
@@ -49,12 +49,13 @@ params = {
         'filter_holder_thickness'       : 6.0,
         'filter_location'               : (1.25*INCH2MM - 0.325*INCH2MM,filter_y_loc),  
         'cover_thickness'               : 3.0,
+        'mask_thickness'                : 1.5,
         'hole_list'                     : [],
-        'window_size'                   : 'small',
+        'window_size'                   : 'large',
         'small_window_size'             : [65, 65],
         'small_filter_size'             : [70,70],
-        'large_window_size'             : [115, 100],
-        'large_filter_size'             : [120, 105],
+        'large_window_size'             : [75, 75],
+        'large_filter_size'             : [82.6, 82.6],
         'lamp_mount_spacing'            : 142.0,
         'lamp_mount_offset'             : 0.5*INCH2MM,
         'lamp_mount_diam'               : 0.136*INCH2MM,   
@@ -73,18 +74,19 @@ enclosure = Transilluminator(params)
 enclosure.make()
 
 part_assembly = enclosure.get_assembly(
-    explode=(0,0,0),
+    explode=(0,0,15),
     show_top=True,
-    show_left=True,
-    show_right=True,
+    show_left=False,
+    show_right=False,
     show_filter_holder=True,
-    show_bottom=True,
+    show_bottom=False,
     show_cover_plate=False
     )
 
 part_projection = enclosure.get_projection()
 part_cover_plate = enclosure.get_cover_plate_projection()
 part_filter_holder = enclosure.get_filter_holder_projection()
+part_mask_plate = enclosure.get_mask_plate_projection()
 
 prog_assembly = SCAD_Prog()
 prog_assembly.fn = fn 
@@ -100,6 +102,11 @@ prog_cover_plate = SCAD_Prog()
 prog_cover_plate.fn = fn
 prog_cover_plate.add(part_cover_plate)
 prog_cover_plate.write('cover_plate_projection.scad')
+
+prog_mask_plate = SCAD_Prog()
+prog_mask_plate.fn = fn
+prog_mask_plate.add(part_mask_plate)
+prog_mask_plate.write('mask_plate_projection.scad')
 
 prog_filter_holder = SCAD_Prog()
 prog_filter_holder.fn = fn

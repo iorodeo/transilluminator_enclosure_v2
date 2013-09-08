@@ -2,12 +2,13 @@ QTY   Description                                   Vendor                    PN
 ------------------------------------------------------------------------------------------------------------------
 1     Power entry and switch                        Digikey                   CCM1906-ND
 4     4-40 standoff, 2.0” long                      McMaster-Carr             91780A174
-4     4-40 machine screw, 1” long, (lower part)     McMaster-Carr             91249A272
-4     4-40 machine screw, ½” long, (top part)       McMaster-Carr             91249A111
+4     4-40 machine screw, 1” long, (top part)       McMaster-Carr             91249A272
+4     4-40 machine screw, 3/8” long, (lower part)   McMaster-Carr             91249A111
 2     5-40 Thread, ½" for power switch              McMaster-Carr             91772A128
 2     8-32 Thread, 1/8" for ballast                 McMaster-Carr             91772A188
 8     8-32 machine screw, 3/16” long, hinges        McMaster-Carr             91771A189
 2     Hinge                                         McMaster-Carr             1598A52
+1     Twist-on wire connectors                      McMaster-Carr             7108K81
 1     312nm Ushio UV bulb                           Fotodyne                  11_2122
 1     U325C transilluminator glass                  HOYA corporation          custom (Email sushama@hoyausa.com)
 1     Ballast and G23 lamp holder                   Atlanta light bulbs       163141.02
