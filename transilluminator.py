@@ -220,14 +220,16 @@ class Transilluminator(Basic_Enclosure):
         # Add mounting holes for power connector
         # 5-40 threaded.
         jack_mount_hole_size = self.params['power_jack_mount_hole_size']
-        jack_mount_hole_offset = self.params['power_jack_mount_hole_offset'] 
+        jack_mount_hole_offset = self.params['power_jack_mount_hole_offset']
+        power_extender_hole_size = self.params['power_extender_hole_size']
+        
 
         for i in (-1,1):
             hole  = {
                     'panel' : 'power_extender',
                     'type':  'round', 
                     'location' : (i*36.8/2.0,0),
-                    'size'  : jack_mount_hole_size 
+                    'size'  : power_extender_hole_size 
                     }
             # JLO
             hole_list.append(hole)

@@ -65,6 +65,7 @@ params = {
         'power_jack_mount_hole_size'    : 0.104*INCH2MM,
         'power_jack_mount_hole_offset'  : 36.8/2.0,
         'power_jack_extender_thickness' : 6.0,
+        'power_extender_hole_size'      : 0.136*INCH2MM,
         'include_vent_holes'            : False,
 
         }
